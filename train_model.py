@@ -5,50 +5,41 @@ from sklearn.preprocessing import OneHotEncoder, OrdinalEncoder
 from sklearn.compose import ColumnTransformer
 from sklearn.pipeline import Pipeline
 
-# 1. Създаваме нашия dataset (сурови данни)
-# Обновени данни с новите професии (приблизителни стойности в BGN за обучението)
+# 1. Реалистични данни за България (Бруто в BGN)
+# Тук добавяме по-голям обем данни за по-добра статистика
 data = {
-    'Experience': [1, 5, 10, 2, 7, 3, 6, 8, 4, 12, 2, 5, 10, 3, 8],
-    'Education': ['Средно', 'Магистър', 'Магистър', 'Бакалавър', 'Магистър', 'Средно', 'Бакалавър', 'Магистър', 'Бакалавър', 'Магистър', 'Средно', 'Бакалавър', 'Магистър', 'Бакалавър', 'Магистър'],
+    'Experience': [0, 1, 2, 3, 5, 8, 10, 0, 2, 5, 1, 4, 7, 2, 6, 12, 3, 9],
+    'Education': ['Бакалавър', 'Бакалавър', 'Магистър', 'Магистър', 'Магистър', 'Магистър', 'Магистър', 'Средно', 'Бакалавър', 'Магистър', 'Средно', 'Бакалавър', 'Магистър', 'Средно', 'Бакалавър', 'Магистър', 'Бакалавър', 'Магистър'],
     'Role': [
-        'QA Engineer', 'AI Engineer', 'AI Engineer', 'Software Developer', 'Software Developer',
-        'Sales Expert', 'Sales Expert', 'Sales Expert', # Нова роля
-        'Logistics Specialist', 'Logistics Specialist', 'Logistics Specialist', # Нова роля
-        'Customer Service', 'Customer Service', 'Customer Service', 'Data Scientist' # Нова роля
+        'Junior Developer', 'Junior Developer', 'Software Developer', 'Software Developer', 'Senior Developer', 'Architect', 'Architect',
+        'Customer Service', 'Sales Expert', 'Sales Expert', 'Logistics Specialist', 'Logistics Specialist', 'Logistics Specialist',
+        'Customer Service', 'Software Developer', 'AI Engineer', 'QA Engineer', 'AI Engineer'
     ],
-    'Salary': [
-        1500, 6000, 8500, 2500, 4800, 
-        1800, 3500, 5500, # Sales (с бонуси)
-        1600, 3200, 4200, # Logistics
-        1400, 2200, 3000, 4500  # Customer Service
+    # Брутни суми в BGN, съобразени с българския пазар
+    'Salary_Gross': [
+        2500, 3200, 4500, 5200, 7500, 11000, 14000, 
+        1600, 2800, 5500, 1800, 3200, 4800, 
+        2100, 6200, 15000, 4000, 13000
     ]
 }
+
 df = pd.DataFrame(data)
-
-# Разделяме входа (X) от това, което предсказваме (y)
 X = df[['Experience', 'Education', 'Role']]
-y = df['Salary']
+y = df['Salary_Gross']
 
-# 2. Правила за превод (Encoding) от думи към числа
-edu_categories = [['Средно', 'Бакалавър', 'Магистър']]
-
+# 2. Настройка на Pipeline (същата архитектура)
 preprocessor = ColumnTransformer(
     transformers=[
-        ('edu', OrdinalEncoder(categories=edu_categories), ['Education']), # Образованието има йерархия
-        ('role', OneHotEncoder(handle_unknown='ignore'), ['Role'])        # Професиите са просто различни флагове
+        ('edu', OrdinalEncoder(categories=[['Средно', 'Бакалавър', 'Магистър']]), ['Education']),
+        ('role', OneHotEncoder(handle_unknown='ignore'), ['Role'])
     ],
-    remainder='passthrough' # Опитът (Experience) вече е число, пропускаме го директно
+    remainder='passthrough'
 )
 
-# 3. Сглобяваме Тръбопровода (Pipeline)
 model_pipeline = Pipeline(steps=[
     ('preprocessor', preprocessor),
     ('regressor', LinearRegression())
 ])
 
-# 4. Тренираме всичко наведнъж
 model_pipeline.fit(X, y)
-
-# Запазваме целия Pipeline (и преводача, и самия AI)
-joblib.dump(model_pipeline, 'salary_model_v2.pkl')
-print("Моделът v2 е успешно трениран и запазен!")
+joblib.dump(model_pipeline, 'salary_model_bg_gross.pkl')

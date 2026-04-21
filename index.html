@@ -87,18 +87,19 @@
                     })
                 });
 
-                if (response.ok) {
+               if (response.ok) {
                     const data = await response.json();
-                    
-                    // Взимаме новата променлива в евро
-                    const salary = data.predicted_salary_eur; 
-                    
-                    // Показваме сумата със символа за Евро
+
+                    // Взимаме променливата за нето заплата в евро
+                    // Вече използваме data.net_eur, защото това зададохме в сървъра
+                    const salary = data.net_eur;
+
+                    // Показваме сумата (коригиран е и символът, за да няма дублиране на € и $)
                     resultText.innerText = `€${Math.round(salary)}`;
-                    
-                    // Анимираме кръга (вече приемаме 5 000 Евро за 100% запълнен кръг)
+
+                    // Анимацията на кръга продължава да работи със стойността на 'salary'
                     let percentage = (salary / 5000) * 100;
-                    if (percentage > 100) percentage = 100; 
+                    if (percentage > 100) percentage = 100;
                     if (percentage < 0) percentage = 0;
                     
                     gaugeFill.setAttribute('stroke-dasharray', `${percentage}, 100`);

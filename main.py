@@ -15,7 +15,7 @@ app.add_middleware(
 )
 
 # Зареждаме новия модел
-model = joblib.load('salary_model_v2.pkl')
+model = joblib.load('salary_model_bg_gross.pkl')
 
 # Вече очакваме 3 параметъра от фронтенда
 class UserInput(BaseModel):
@@ -31,13 +31,17 @@ def predict_salary(data: UserInput):
         'Role': data.role
     }])
     
-    # 1. Моделът предсказва в базовата валута (BGN)
-    prediction_bgn = model.predict(input_df)[0]
+    # Предсказание на Бруто (BGN)
+    gross_bgn = model.predict(input_df)[0]
     
-    # 2. Бизнес логика: Конвертираме в Евро
-    prediction_eur = prediction_bgn / 1.95583
+    # Конвертиране в EUR (фиксиран курс 1.95583)
+    gross_eur = gross_bgn / 1.95583
     
-    # 3. Връщаме новия JSON
+    # Примерно изчисление на Нето (за България - приблизително 78% от бруто след макс. осиг. праг)
+    # За по-голяма точност тук може да се вгради пълната формула за ДОД и осигуровки
+    net_eur = gross_eur * 0.77 
+
     return {
-        "predicted_salary_eur": round(prediction_eur, 2)
+        "gross_eur": round(gross_eur, 2),
+        "net_eur": round(net_eur, 2)
     }

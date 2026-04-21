@@ -6,11 +6,22 @@ from sklearn.compose import ColumnTransformer
 from sklearn.pipeline import Pipeline
 
 # 1. Създаваме нашия dataset (сурови данни)
+# Обновени данни с новите професии (приблизителни стойности в BGN за обучението)
 data = {
-    'Experience': [1, 3, 5, 2, 8, 10, 4, 6, 2, 7, 12, 15],
-    'Education': ['Средно', 'Бакалавър', 'Магистър', 'Средно', 'Магистър', 'Бакалавър', 'Бакалавър', 'Магистър', 'Бакалавър', 'Магистър', 'Бакалавър', 'Магистър'],
-    'Role': ['QA Engineer', 'Software Developer', 'Software Developer', 'QA Engineer', 'AI Engineer', 'AI Engineer', 'QA Engineer', 'Data Scientist', 'Data Scientist', 'Software Developer', 'AI Engineer', 'Data Scientist'],
-    'Salary': [1500, 2500, 3800, 1700, 6000, 6500, 2800, 4500, 3200, 4800, 7000, 8500]
+    'Experience': [1, 5, 10, 2, 7, 3, 6, 8, 4, 12, 2, 5, 10, 3, 8],
+    'Education': ['Средно', 'Магистър', 'Магистър', 'Бакалавър', 'Магистър', 'Средно', 'Бакалавър', 'Магистър', 'Бакалавър', 'Магистър', 'Средно', 'Бакалавър', 'Магистър', 'Бакалавър', 'Магистър'],
+    'Role': [
+        'QA Engineer', 'AI Engineer', 'AI Engineer', 'Software Developer', 'Software Developer',
+        'Sales Expert', 'Sales Expert', 'Sales Expert', # Нова роля
+        'Logistics Specialist', 'Logistics Specialist', 'Logistics Specialist', # Нова роля
+        'Customer Service', 'Customer Service', 'Customer Service', 'Data Scientist' # Нова роля
+    ],
+    'Salary': [
+        1500, 6000, 8500, 2500, 4800, 
+        1800, 3500, 5500, # Sales (с бонуси)
+        1600, 3200, 4200, # Logistics
+        1400, 2200, 3000, 4500  # Customer Service
+    ]
 }
 df = pd.DataFrame(data)
 

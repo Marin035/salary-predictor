@@ -3,97 +3,107 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI Предсказател</title>
+    <title>AI Предсказател v2</title>
     <style>
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #f0f2f5;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            margin: 0;
-        }
-        .card {
-            background-color: white;
-            padding: 40px;
-            border-radius: 12px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-            text-align: center;
-            max-width: 400px;
-            width: 100%;
-        }
+        body { font-family: 'Segoe UI', Tahoma, sans-serif; background-color: #f0f2f5; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
+        .card { background-color: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); text-align: center; max-width: 450px; width: 100%; }
         h2 { color: #333; margin-top: 0; }
-        input {
-            width: 80%;
-            padding: 10px;
-            margin: 20px 0;
-            border: 1px solid #ccc;
-            border-radius: 6px;
-            font-size: 16px;
-        }
-        button {
-            background-color: #007bff;
-            color: white;
-            border: none;
-            padding: 12px 25px;
-            border-radius: 6px;
-            font-size: 16px;
-            cursor: pointer;
-            transition: background-color 0.3s;
-        }
+        .input-group { margin: 15px 0; text-align: left; }
+        label { display: block; font-weight: bold; margin-bottom: 5px; color: #555; }
+        input, select { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 6px; font-size: 16px; box-sizing: border-box; }
+        button { background-color: #007bff; color: white; border: none; padding: 12px 25px; border-radius: 6px; font-size: 16px; cursor: pointer; width: 100%; font-weight: bold; margin-top: 10px; }
         button:hover { background-color: #0056b3; }
-        #result {
-            margin-top: 25px;
-            font-size: 18px;
-            font-weight: bold;
-            color: #28a745;
-        }
-        .error { color: #dc3545; }
+        
+        /* Стилизиране на кръговия индикатор (Gauge) */
+        .gauge-container { margin-top: 20px; position: relative; width: 150px; height: 150px; margin-left: auto; margin-right: auto; }
+        .circular-chart { display: block; width: 100%; height: 100%; }
+        .circle-bg { fill: none; stroke: #eee; stroke-width: 3.8; }
+        .circle { fill: none; stroke-width: 2.8; stroke-linecap: round; stroke: #007bff; transition: stroke-dasharray 1s ease-out; }
+        .salary-text { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 22px; font-weight: bold; color: #333; white-space: nowrap; }
     </style>
 </head>
 <body>
 
     <div class="card">
-        <h2>AI Предсказател за Заплата 🤖</h2>
-        <p>Въведи години опит, за да разбереш очакваната заплата според модела.</p>
+        <h2>AI Architect 🤖</h2>
         
-        <input type="number" id="experience" step="0.1" placeholder="Напр. 3.5">
-        <br>
+        <div class="input-group">
+            <label>Години опит:</label>
+            <input type="number" id="experience" step="0.5" value="2">
+        </div>
+
+        <div class="input-group">
+            <label>Ниво на образование:</label>
+            <select id="education">
+                <option value="Средно">Средно</option>
+                <option value="Бакалавър" selected>Бакалавър</option>
+                <option value="Магистър">Магистър</option>
+            </select>
+        </div>
+
+        <div class="input-group">
+            <label>ИТ Професия:</label>
+            <select id="role">
+                <option value="Software Developer">Software Developer</option>
+                <option value="QA Engineer">QA Engineer</option>
+                <option value="Data Scientist">Data Scientist</option>
+                <option value="AI Engineer" selected>AI Engineer</option>
+            </select>
+        </div>
+        
         <button onclick="getPrediction()">Изчисли Заплата</button>
         
-        <div id="result"></div>
+        <div class="gauge-container">
+            <svg viewBox="0 0 36 36" class="circular-chart">
+                <path class="circle-bg" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+                <path class="circle" id="gauge-fill" stroke-dasharray="0, 100" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+            </svg>
+            <div class="salary-text" id="result-text">0€</div>
+        </div>
     </div>
 
     <script>
         async function getPrediction() {
-            const years = document.getElementById('experience').value;
-            const resultDiv = document.getElementById('result');
+            const exp = document.getElementById('experience').value;
+            const edu = document.getElementById('education').value;
+            const role = document.getElementById('role').value;
             
-            if (!years) {
-                resultDiv.innerHTML = '<span class="error">Моля, въведи години опит!</span>';
-                return;
-            }
+            const resultText = document.getElementById('result-text');
+            const gaugeFill = document.getElementById('gauge-fill');
 
-            resultDiv.innerHTML = 'Моделът мисли... ⏳';
+            resultText.innerText = '...';
 
             try {
-                // Пращаме заявка към твоето FastAPI
                 const response = await fetch('http://127.0.0.1:8000/predict', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ years_experience: parseFloat(years) })
+                    body: JSON.stringify({ 
+                        experience: parseFloat(exp),
+                        education: edu,
+                        role: role
+                    })
                 });
 
                 if (response.ok) {
                     const data = await response.json();
-                    // Показваме резултата
-                    resultDiv.innerHTML = `💰 Предсказана заплата: ${data.predicted_salary_bgn} лв.`;
-                } else {
-                    resultDiv.innerHTML = '<span class="error">Грешка при връзката със сървъра.</span>';
+                    
+                    // Взимаме новата променлива в евро
+                    const salary = data.predicted_salary_eur; 
+                    
+                    // Показваме сумата със символа за Евро
+                    resultText.innerText = `€${Math.round(salary)}`;
+                    
+                    // Анимираме кръга (вече приемаме 5 000 Евро за 100% запълнен кръг)
+                    let percentage = (salary / 5000) * 100;
+                    if (percentage > 100) percentage = 100; 
+                    if (percentage < 0) percentage = 0;
+                    
+                    gaugeFill.setAttribute('stroke-dasharray', `${percentage}, 100`);
+                }else {
+                    resultText.innerText = 'Грешка';
                 }
             } catch (error) {
-                resultDiv.innerHTML = '<span class="error">Сървърът не работи. Провери терминала си!</span>';
+                resultText.innerText = 'Няма сървър';
             }
         }
     </script>

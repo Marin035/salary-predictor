@@ -2,33 +2,42 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 import joblib
-import numpy as np
+import pandas as pd
 
-app = FastAPI(title="AI Salary predictor API")
+app = FastAPI(title="AI Salary Predictor API v2")
 
-# Позволяваме на нашия HTML файл да комуникира с API-то
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"], # Позволява заявки от всякъде (добро за локална разработка)
+    allow_origins=["*"], 
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-model = joblib.load('salary_model.pkl')
+# Зареждаме новия модел
+model = joblib.load('salary_model_v2.pkl')
 
+# Вече очакваме 3 параметъра от фронтенда
 class UserInput(BaseModel):
-    years_experience: float
+    experience: float
+    education: str
+    role: str
 
 @app.post("/predict")
 def predict_salary(data: UserInput):
-    X_new = np.array([[data.years_experience]])
+    input_df = pd.DataFrame([{
+        'Experience': data.experience,
+        'Education': data.education,
+        'Role': data.role
+    }])
     
-
-    prediction = model.predict(X_new)
+    # 1. Моделът предсказва в базовата валута (BGN)
+    prediction_bgn = model.predict(input_df)[0]
     
-
+    # 2. Бизнес логика: Конвертираме в Евро
+    prediction_eur = prediction_bgn / 1.95583
+    
+    # 3. Връщаме новия JSON
     return {
-        "years_experience": data.years_experience,
-        "predicted_salary_bgn": round(prediction[0], 2)
+        "predicted_salary_eur": round(prediction_eur, 2)
     }

@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="bg">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Предсказател</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f0f2f5;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        .card {
+            background-color: white;
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            text-align: center;
+            max-width: 400px;
+            width: 100%;
+        }
+        h2 { color: #333; margin-top: 0; }
+        input {
+            width: 80%;
+            padding: 10px;
+            margin: 20px 0;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            font-size: 16px;
+        }
+        button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 6px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        button:hover { background-color: #0056b3; }
+        #result {
+            margin-top: 25px;
+            font-size: 18px;
+            font-weight: bold;
+            color: #28a745;
+        }
+        .error { color: #dc3545; }
+    </style>
+</head>
+<body>
+
+    <div class="card">
+        <h2>AI Предсказател за Заплата 🤖</h2>
+        <p>Въведи години опит, за да разбереш очакваната заплата според модела.</p>
+        
+        <input type="number" id="experience" step="0.1" placeholder="Напр. 3.5">
+        <br>
+        <button onclick="getPrediction()">Изчисли Заплата</button>
+        
+        <div id="result"></div>
+    </div>
+
+    <script>
+        async function getPrediction() {
+            const years = document.getElementById('experience').value;
+            const resultDiv = document.getElementById('result');
+            
+            if (!years) {
+                resultDiv.innerHTML = '<span class="error">Моля, въведи години опит!</span>';
+                return;
+            }
+
+            resultDiv.innerHTML = 'Моделът мисли... ⏳';
+
+            try {
+                // Пращаме заявка към твоето FastAPI
+                const response = await fetch('http://127.0.0.1:8000/predict', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ years_experience: parseFloat(years) })
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    // Показваме резултата
+                    resultDiv.innerHTML = `💰 Предсказана заплата: ${data.predicted_salary_bgn} лв.`;
+                } else {
+                    resultDiv.innerHTML = '<span class="error">Грешка при връзката със сървъра.</span>';
+                }
+            } catch (error) {
+                resultDiv.innerHTML = '<span class="error">Сървърът не работи. Провери терминала си!</span>';
+            }
+        }
+    </script>
+</body>
+</html>
